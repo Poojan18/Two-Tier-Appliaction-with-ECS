@@ -101,16 +101,67 @@ jobs:
         cluster: ${{ env.ECS_CLUSTER }}
         wait-for-service-stability: true
 
-    - name: Notify Slack - Workflow Succeeded
-      if: success()
-      run: |
-        curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"✅ Workflow *succeeded* on `${{ github.repository }}` 🚀"}' \
-            "${{ secrets.SLACK_WEBHOOK_URL }}"
+    - name: Send custom JSON data to Slack on Success
+      if: success() # This condition ensures the step only runs if the previous steps succeeded
+      uses: slackapi/slack-github-action@v2
+      with:
+        payload: |
+          {
+          "blocks": [
+          {
+              "type": "section",
+              "text": {
+              "type": "mrkdwn",
+              "text": ":white_check_mark: *Successful GitHub Actions Workflow*"
+            }
+          },
+          {
+            "type": "section",
+            "fields": [
+              { "type": "mrkdwn", "text": "*Repo*\n<${{ github.server_url }}/${{ github.repository }}|${{ github.repository }}>"},
+              { "type": "mrkdwn", "text": "*Commit*\n<${{ github.event.head_commit.url }}|${{ github.sha }}>"},
+              { "type": "mrkdwn", "text": "*Author*\n${{ github.event.head_commit.author.name }}"},
+              { "type": "mrkdwn", "text": "*Job*\n`${{ github.job }}`"},
+              { "type": "mrkdwn", "text": "*Event Name*\n`${{ github.event_name }}`"},
+              { "type": "mrkdwn", "text": "*Workflow*\n`${{ github.workflow }}`"},
+              { "type": "mrkdwn", "text": "*Build Logs*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>"},
+              { "type": "mrkdwn", "text": "*Took*\n`${{ steps.calculate_duration.outputs.duration }}` sec"},
+              { "type": "mrkdwn", "text": "*Message*\n${{ github.event.head_commit.message }}"}
+            ]
+          }
+          ]
+          }
+          env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-    - name: Notify Slack - Workflow Failed
-      if: failure()
-      run: |
-        curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"❌ Workflow *failed* on `${{ github.repository }}` ❗"}' \
-            "${{ secrets.SLACK_WEBHOOK_URL }}"
+    - name: Send custom JSON data to Slack
+      uses: slackapi/slack-github-action@v2
+      with:
+          payload: |
+            {
+              "blocks": [
+            {
+              "type": "section",
+              "text": {
+              "type": "mrkdwn",
+              "text": "*:x: Failed GitHub Actions*"
+            }
+            },
+            {
+            "type": "section",
+            "fields": [
+              { "type": "mrkdwn", "text": "*Repo*\n<${{ github.server_url }}/${{ github.repository }}|${{ github.repository }}">,
+              { "type": "mrkdwn", "text": "*Commit*\n<${{ github.event.head_commit.url }}|${{ github.sha }}">,
+              { "type": "mrkdwn", "text": "*Author*\n${{ github.event.head_commit.author.name }}">,
+              { "type": "mrkdwn", "text": "*Job*\n`${{ github.job }}">,
+              { "type": "mrkdwn", "text": "*Event Name*\n`${{ github.event_name }}">,
+              { "type": "mrkdwn", "text": "*Workflow*\n`${{ github.workflow }}">,
+              { "type": "mrkdwn", "text": "*Build Logs*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs">,
+              { "type": "mrkdwn", "text": "*Took*\n`${{ steps.calculate_duration.outputs.duration }} sec">,
+              { "type": "mrkdwn", "text": "*Message*\n${{ github.event.head_commit.message }}"
+            ]
+            }  
+            ]
+            }
+            env:
+            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
