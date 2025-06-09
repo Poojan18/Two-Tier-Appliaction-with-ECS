@@ -32,7 +32,7 @@ on:
 
 env:
   AWS_REGION: us-east-1                   # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: python           # set this to your Amazon ECR repository name
+  ECR_REPOSITORY: 654721610353.dkr.ecr.eu-north-1.amazonaws.com/python         # set this to your Amazon ECR repository name
   ECS_SERVICE: Backend-service-4nh3mumm                 # set this to your Amazon ECS service name
   ECS_CLUSTER: prod-active                 # set this to your Amazon ECS cluster name
   ECS_TASK_DEFINITION: .aws/Backend.json # set this to the path to your Amazon ECS task definition
