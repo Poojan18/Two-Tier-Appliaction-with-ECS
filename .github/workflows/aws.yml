@@ -35,7 +35,7 @@ env:
   ECR_REPOSITORY: python         # set this to your Amazon ECR repository name
   ECS_SERVICE: Backend-service-4nh3mumm                 # set this to your Amazon ECS service name
   ECS_CLUSTER: prod-active                 # set this to your Amazon ECS cluster name
-  ECS_TASK_DEFINITION: Backend:3 # set this to the path to your Amazon ECS task definition
+  ECS_TASK_DEFINITION: aws/Backend-revision3.json # set this to the path to your Amazon ECS task definition
                                                # file, e.g. .aws/task-definition.json
   CONTAINER_NAME: backend-container           # set this to the name of the container in the
                                                # containerDefinitions section of your task definition
