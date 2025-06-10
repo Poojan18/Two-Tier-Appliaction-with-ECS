@@ -107,11 +107,21 @@ jobs:
         cluster: ${{ env.ECS_CLUSTER }}
         wait-for-service-stability: true
     
-    - name: Notification for failure or success
-      uses: 8398a7/action-slack@v3
+    - name: Post "Workflow Result" message to Slack with error info
+      uses: slackapi/slack-github-action@v2.1.0
       with:
-        status: ${{ job.status }}
-        fields: repo,message,commit,author,action,eventName,ref,workflow,job,took # selectable (default: repo,message)
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-      if: always() # Pick up events even if the job fails or is canceled.
+        webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+        webhook-type: incoming-webhook
+        payload: |
+          text: "GitHub Action build result: ${{ job.status }} - ${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+          blocks:
+            - type: "section"
+              text:
+                type: "mrkdwn"
+                text: |
+                  ${{ job.status == 'success' && '✅ *Deployment Successful!* 🎉' || '❌ *Deployment Failed!* 🚨' }}
+                  *Workflow:* `${{ github.workflow }}`
+                  *Status:* `${{ job.status }}`
+                  *Commit:* <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|`${{ github.sha }}`>
+                  *View Details & Logs:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here to view workflow run>
+      if: always() # Essential to get the final status, even on failure
