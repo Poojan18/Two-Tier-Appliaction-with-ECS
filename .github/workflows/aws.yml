@@ -50,21 +50,22 @@ jobs:
     environment: production
 
     steps:
+    - name: Post a message in a channel
+      uses: slackapi/slack-github-action@v2.1.0
+      with:
+        webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+        webhook-type: incoming-webhook
+        payload: |
+          text: "*GitHub Action build result*: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+            blocks:
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+    
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Start a workflow with a webhook trigger
-      id: wfb
-      uses: ./
-      with:
-          errors: true
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: webhook-url
-          payload: |
-            author: ${{ github.event.sender.login }}
-            event_url: ${{ github.event.pull_request.html_url }}
-            repo_name: ${{ github.event.repository.full_name }}
-            status: ${{ job.status }}
-
+      
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
