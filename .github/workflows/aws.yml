@@ -50,11 +50,12 @@ jobs:
     environment: production
 
     steps:
-    - name: Notify Slack - Workflow Started
-      run: |
-        curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"🚀 GitHub Actions workflow *started* on `${{ github.repository }}` by `${{ github.actor }}`."}' \
-            "${{ secrets.SLACK_WEBHOOK_URL }}"
+    - uses: act10ns/slack@v1
+      with:
+          status: starting
+          channel: '#workflows'
+          message: Github Action Workflow Started...
+      if: always()
 
     - name: Checkout
       uses: actions/checkout@v4
@@ -101,11 +102,22 @@ jobs:
         cluster: ${{ env.ECS_CLUSTER }}
         wait-for-service-stability: true
     
-    - name: Notification for failure or success
-      uses: 8398a7/action-slack@v3
-      with:
-        status: ${{ job.status }}
-        fields: repo,message,commit,author,action,eventName,ref,workflow,job,took # selectable (default: repo,message)
+    - name: Notify slack success
+      if: success()
       env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-      if: always() # Pick up events even if the job fails or is canceled.
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_WEBHOOK_URL }}
+      uses: voxmedia/github-action-slack-notify-build@v1
+      with:
+        channel: app-alerts
+        status: SUCCESS
+        color: good
+    
+    - name: Notify slack fail
+      if: failure()
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_WEBHOOK_URL }}
+      uses: voxmedia/github-action-slack-notify-build@v1
+      with:
+        channel: app-alerts
+        status: FAILED
+        color: danger
