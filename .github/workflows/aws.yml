@@ -29,14 +29,14 @@ name: Deploy to Amazon ECS
 on:
   push:
     branches: [ "main" ]
-
+    
 env:
   AWS_REGION: eu-north-1                   # set this to your preferred AWS region, e.g. us-west-1
   ECR_REPOSITORY: python         # set this to your Amazon ECR repository name
   ECS_SERVICE: Backend-service-4nh3mumm                 # set this to your Amazon ECS service name
   ECS_CLUSTER: prod-active                 # set this to your Amazon ECS cluster name
   ECS_TASK_DEFINITION: aws/Backend-revision3.json # set this to the path to your Amazon ECS task definition
-                                               # file, e.g. .aws/task-definition.json
+  SLACK_CHANNEL_ID: '#learning'                                             # file, e.g. .aws/task-definition.json
   CONTAINER_NAME: backend-container           # set this to the name of the container in the
                                                # containerDefinitions section of your task definition
 
@@ -50,19 +50,18 @@ jobs:
     environment: production
 
     steps:
-    - name: Post a message in a channel
+    - name: Post "Workflow Started" message to Slack
       uses: slackapi/slack-github-action@v2.1.0
       with:
         webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
         webhook-type: incoming-webhook
         payload: |
-          text: "*GitHub Action build result*: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
-            blocks:
-              - type: "section"
-                text:
-                  type: "mrkdwn"
-                  text: "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
-    
+          text: "Workflow started: ${{ github.workflow }} for commit `${{ github.sha }}` by `${{ github.actor }}`"
+          blocks:
+            - type: "section"
+              text:
+                type: "mrkdwn"
+                text: "🚀 *GitHub Action Workflow Started:* `${{ github.workflow }}`\n*Commit:* <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|`${{ github.sha }}`>\n*Triggered by:* `${{ github.actor }}`"
     - name: Checkout
       uses: actions/checkout@v4
       
