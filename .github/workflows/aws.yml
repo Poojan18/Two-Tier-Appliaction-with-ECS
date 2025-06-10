@@ -50,6 +50,8 @@ jobs:
     environment: production
 
     steps:
+    - name: Checkout
+      uses: actions/checkout@v4
     - name: Start a workflow with a webhook trigger
       id: wfb
       uses: ./
@@ -62,9 +64,6 @@ jobs:
             event_url: ${{ github.event.pull_request.html_url }}
             repo_name: ${{ github.event.repository.full_name }}
             status: ${{ job.status }}
-
-    - name: Checkout
-      uses: actions/checkout@v4
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
